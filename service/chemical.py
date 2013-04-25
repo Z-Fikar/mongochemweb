@@ -172,7 +172,7 @@ def result_to_response(rep, cursor):
     def to_cjson(mol):
       mol['chemical json'] = 0
       del mol['_id']
-      return bson.json_util.dumps(mol)
+      return json.dumps(mol)
     return process_cursor(cursor, to_cjson)
   elif rep == 'inchi':
     return process_cursor(cursor, lambda mol: mol['inchi'])
