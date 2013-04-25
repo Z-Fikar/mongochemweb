@@ -125,7 +125,7 @@ client = None
 def connect(server, db):
   if not client:
     global client
-    client = pymongo.MongoClient(server)[db]['molecules']
+    client = pymongo.Connection(server)[db]['molecules']
 
   return client
 
