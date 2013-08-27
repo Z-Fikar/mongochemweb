@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/d3.min.js"></script>
+<script type="text/javascript" src="mongochemweb.js"></script>
+<link href="css/bootstrap.css" rel=stylesheet type=text/css>
+<link href="css/jquery-ui.css" rel=stylesheet type=text/css>
+<link href="mongochemweb.css" rel=stylesheet type=text/css>
+</head>
+<body onload="main()">
+ <div class="input-group">
+  <span class=input-group-addon><i
+   class="glyphicon glyphicon-search"></i></span> <input id=query-input
+   type="text" class="form-control" placeholder="Query">
+ </div>
+ <table id="results-table" class="table table-hover">
+  <thead>
+   <tr>
+    <th class="diagram">Diagram</th>
+    <th class="name">Name</th>
+    <th class="formula">Formula</th>
+    <th class="weight">Atomic Weight</th>
+    <th class="inchi">INCHI</th>
+    <th class="smiles">SMILES</th>
+  </thead>
+  <tbody id="results-table-body">
+  </tbody>
+ </table>
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+.query-in-progress {
+  background-image: url('img/ui-anim_basic_16x16.gif');
+  background-position: right center;
+  background-repeat: no-repeat;
+  background-origin:content-box;
+ }
+
+#query-input {
+  width: 50%;
+}
+
+.invalid-query {
+  background-color: #f2dede;
+}
+
+.valid-query {
+  background-color: #dff0d8;
+}
