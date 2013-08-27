@@ -157,6 +157,13 @@ def process_cursor(cursor, trans):
 
   return response
 
+def process_cursor_to_list(cursor, trans):
+  response = []
+  for mol in cursor:
+    response.append(trans(mol))
+
+  return response
+
 # transform the result set from mongo into a HTTP response
 def result_to_response(rep, cursor):
 
@@ -167,13 +174,36 @@ def result_to_response(rep, cursor):
     return process_cursor(cursor, lambda mol: mol['diagram'])
   elif rep == 'svg':
     cursor.limit(1)
-    return process_cursor(cursor, lambda mol: mol['svg'])
+
+    def process_svg(mol):
+      svg = ''
+      if 'svg' in mol:
+        svg = mol['svg']
+
+      return svg
+
+    svg = process_cursor(cursor, process_svg)
+
+    if len(svg.strip()) == 0:
+      svg = '<?xml version="1.0"?><svg version="1.1" id="topsvg" \
+             xmlns="http://www.w3.org/2000/svg" \
+             xmlns:xlink="http://www.w3.org/1999/xlink" \
+             xmlns:cml="http://www.xml-cml.org/schema" \
+             x="0" y="0" width="0px" height="0px" viewBox="0 0 0 0"></svg>'
+
+      tangelo.log(svg);
+
+
+    return svg
+
   elif rep == 'cjson':
     def to_cjson(mol):
       mol['chemical json'] = 0
       del mol['_id']
-      return json.dumps(mol)
-    return process_cursor(cursor, to_cjson)
+      return mol
+    result = {}
+    result['results'] = process_cursor_to_list(cursor, to_cjson)
+    return result
   elif rep == 'inchi':
     return process_cursor(cursor, lambda mol: mol['inchi'])
   elif rep == 'inchikey':
