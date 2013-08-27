@@ -155,7 +155,7 @@ integer = Word(nums).setParseAction(lambda t: int(t[0]))
 real = Combine(Word(nums) + "." + Word(nums)).setParseAction(lambda t: float(t[0]))
 numeric_field = oneOf('mass atomCount')
 string_field = oneOf('name formula inchi inchikey')
-string = Word(string.letters+string.digits+'=/-*[](), ')
+string = Word(string.letters+string.digits+'=/-*[](), .')
 comparision = oneOf([EQ, NE, GT, GTE, LT, LTE])
 boolean = oneOf([AND, OR])
 comparison_operand = real | integer | numeric_field

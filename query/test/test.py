@@ -47,11 +47,13 @@ class TestQueryParser(unittest.TestCase):
               'name~eq~3-hydroxymyristic acid [2-[[[5-(2,4-diketopyrimidin-1-yl)-3,4-dihydroxy-tetrahydrofuran-2-yl]methoxy-hydroxy-phosphoryl]oxy-hydroxy-phosphoryl]oxy-5-hydroxy-3-(3-hydroxytetradecanoylamino)-6-methylol-tetrahydropyran-4-yl] ester': {'name': '3-hydroxymyristic acid [2-[[[5-(2,4-diketopyrimidin-1-yl)-3,4-dihydroxy-tetrahydrofuran-2-yl]methoxy-hydroxy-phosphoryl]oxy-hydroxy-phosphoryl]oxy-5-hydroxy-3-(3-hydroxytetradecanoylamino)-6-methylol-tetrahydropyran-4-yl] ester'},
               'atomCount~lte~3.14159': {'atomCount': {'$lte':  3.14159}},
               'atomCount~gte~3.14159': {'atomCount': {'$gte':  3.14159}},
+              'inchi~eq~InChI=1S/Na.H\n': {'inchi': 'InChI=1S/Na.H'}
               }
 
 
     for test_query, expected in queries.iteritems():
       mongo_query = query.to_mongo_query(test_query)
+      print test_query
       self.assertEqual(mongo_query , expected)
 
   def test_invalid(self):
