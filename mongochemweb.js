@@ -1,5 +1,7 @@
 var mongochem = {}
 
+mongochem.currentQuery = null;
+
 function main() {
   console.log("main");
   $('#query-input').bind("keyup", function() {
@@ -38,12 +40,14 @@ function main() {
 
 mongochem.processQuery = function(query) {
 
-  var replaceMap = {'<': '~lt~',
+  var replaceMap = {'>=': '~gte~',
+                    '<=': '~lte~',
+                    '<': '~lt~',
                     '>': '~gt~',
                     '=': '~eq~',
                     '!=': '~ne~',
-                    '>=': '~gte~',
-                    '<=': '~lte~'}
+                    '&': '~and~',
+                    '|': '~or~'}
 
   for (var op in replaceMap) {
     query = query.replace(op, replaceMap[op]);
@@ -51,7 +55,6 @@ mongochem.processQuery = function(query) {
 
   return query;
 }
-
 
 mongochem.query = function(query) {
   var queryOptions = {
@@ -78,13 +81,19 @@ mongochem.query = function(query) {
 
   };
 
-  mongochem.queueQuery(queryOptions);
+  // If there is a query in progress abort it
+  if (mongochem.currentQuery)
+    mongochem.currentQuery.abort("");
+
+  mongochem.currentQuery = mongochem.queueQuery(queryOptions);
 }
 
 mongochem.queryQueue = $({});
 
 mongochem.queueQuery = function(queryOptions) {
-  var jqXHR
+  var jqXHR;
+  var deferred = $.Deferred();
+  var promise = deferred.promise();
 
   function doQuery( next ) {
       jqXHR = $.ajax(queryOptions);
@@ -92,6 +101,25 @@ mongochem.queueQuery = function(queryOptions) {
   }
 
   mongochem.queryQueue.queue(doQuery);
+
+  promise.abort = function(msg) {
+    if ( jqXHR ) {
+      return jqXHR.abort(msg);
+    }
+
+    var queue = ajaxQueue.queue(),
+    index = $.inArray( doQuery, mongochem.queryQueue);
+
+    if ( index > -1 ) {
+      queue.splice(index, 1);
+    }
+
+    deferred.rejectWith( queryOptions.context || queryOptions, [ promise, msg, "" ] );
+
+    return promise;
+  };
+
+  return promise;
 };
 
 mongochem.formatFormula = function(formula) {
