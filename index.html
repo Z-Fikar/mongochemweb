@@ -11,11 +11,13 @@
 <link href="mongochemweb.css" rel=stylesheet type=text/css>
 </head>
 <body onload="main()">
- <div class="input-group">
+ <div id=input class="input-group">
   <span class=input-group-addon><i
    class="glyphicon glyphicon-search"></i></span> <input id=query-input
    type="text" class="form-control" placeholder="Query">
  </div>
+ <i id=help class="glyphicon glyphicon-question-sign" style="display: inline;"></i>
+
  <table id="results-table" class="table table-hover">
   <thead>
    <tr>

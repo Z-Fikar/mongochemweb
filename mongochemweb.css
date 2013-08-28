@@ -5,8 +5,9 @@
   background-origin:content-box;
  }
 
-#query-input {
+#input {
   width: 50%;
+  float: left;
 }
 
 .invalid-query {
@@ -15,4 +16,9 @@
 
 .valid-query {
   background-color: #dff0d8;
+}
+
+#help {
+  float: left;
+  left: 5px;
 }

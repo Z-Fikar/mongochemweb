@@ -14,9 +14,27 @@ function main() {
     }
   })
 
+  $.ajax({
+    type: 'GET',
+    url: 'syntax.html',
+    data: $(this).attr('alt'),
+    dataType: 'html',
+    success: function(data) {
+        var popoverOptions = {
+          title: 'Query syntax',
+          placement: 'bottom',
+          trigger: 'hover',
+          html: true,
+          content: data
+        };
+        $('#help').popover(popoverOptions);
+    },
+    error: function(jqXHR, textStatus, errorThrown ) {
+      console.log(errorThrown);
+  }
+  })
+
 }
-
-
 
 mongochem.processQuery = function(query) {
 
