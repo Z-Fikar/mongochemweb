@@ -142,7 +142,9 @@ mongochem.processResults = function(cjsonList) {
 
     var cells = rows.selectAll("td")
         .data(function(row) {
-               return [mongochem.diagramHTML(row['inchi']), row['name'], mongochem.formatFormula(row['formula'])];
+               return [mongochem.diagramHTML(row['inchi']), row['name'],
+                       mongochem.formatFormula(row['formula']),
+                       row['mass'], row['inchi']];
         })
         .enter()
         .append("td")

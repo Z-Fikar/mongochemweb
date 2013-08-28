@@ -145,7 +145,7 @@ def generate_mongo_projection(rep):
     proj = {rep: 1}
   elif rep == 'cjson':
     proj = { 'name': 1, 'inchi': 1, 'formula': 1, 'atoms': 1, 'bonds': 1,
-            'properties': 1 }
+            'properties': 1, 'mass': 1 }
 
   return proj
 
