@@ -22,3 +22,7 @@
   float: left;
   left: 5px;
 }
+
+.popover {
+  max-width: 500px;
+}
