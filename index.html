@@ -11,25 +11,33 @@
 <link href="mongochemweb.css" rel=stylesheet type=text/css>
 </head>
 <body onload="main()">
- <div id=input class="input-group">
-  <span class=input-group-addon><i
-   class="glyphicon glyphicon-search"></i></span> <input id=query-input
-   type="text" class="form-control" placeholder="Query">
+ <div class=row>
+  <div class=col-md-12>
+   <div id=input class="input-group">
+    <span class=input-group-addon><i
+     class="glyphicon glyphicon-search"></i></span> <input id=query-input
+     type="text" class="form-control" placeholder="Query">
+   </div>
+   <i id=help class="glyphicon glyphicon-question-sign"></i>
+  </div>
  </div>
- <i id=help class="glyphicon glyphicon-question-sign" style="display: inline;"></i>
-
- <table id="results-table" class="table table-hover">
-  <thead>
-   <tr>
-    <th class="diagram">Diagram</th>
-    <th class="name">Name</th>
-    <th class="formula">Formula</th>
-    <th class="weight">Molecular Weight</th>
-    <th class="inchi">InChI</th>
-    <!-- <th class="smiles">SMILES</th> -->
-  </thead>
-  <tbody id="results-table-body">
-  </tbody>
- </table>
+ <div class=row>
+  <div class=col-md-12>
+   <table id="results-table" class="table table-hover"
+    style="float: none">
+    <thead>
+     <tr>
+      <th class="diagram">Diagram</th>
+      <th class="name">Name</th>
+      <th class="formula">Formula</th>
+      <th class="weight">Molecular Weight</th>
+      <th class="inchi">InChI</th>
+      <!-- <th class="smiles">SMILES</th> -->
+    </thead>
+    <tbody id="results-table-body">
+    </tbody>
+   </table>
+  </div>
+ </div>
 </body>
 </html>

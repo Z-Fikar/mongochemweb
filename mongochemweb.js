@@ -150,7 +150,7 @@ mongochem.formatFormula = function(formula) {
 }
 
 mongochem.diagramHTML = function(inchi) {
-  var html = '<embed src="';
+  var html = '<embed style="width: 200px;" src="';
   var url = 'service/chemical/svg?q=inchi~eq~' + inchi;
 
   html += url;
