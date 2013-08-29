@@ -96,6 +96,7 @@ import json
 import re
 import bson.json_util
 import shlex
+import os
 
 # add query parser module to path
 tangelo.paths(['../query'])
@@ -117,7 +118,8 @@ default_limit = 50
 
 # load the configuration
 config = {}
-with open ('/home/cjh/tangelo_html/mongochemweb/config/db.json') as fp:
+path = os.path.dirname(os.path.realpath(__file__))
+with open ('%s/../config/db.json' % (path)) as fp:
   config = json.load(fp)
 
 # connect to a particular mongochem instance
