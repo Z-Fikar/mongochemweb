@@ -1,6 +1,8 @@
 var mongochem = {}
 
 mongochem.currentQuery = null;
+mongochem.viewport = null;
+mongochem.connection = null;
 
 function main() {
   console.log("main");
@@ -9,47 +11,47 @@ function main() {
     if (query.length == 0) {
       $('#query-input').removeClass("query-in-progress");
       $('#results-table-body').empty();
-    }
-    else {
+    } else {
       $('#query-input').addClass("query-in-progress");
       mongochem.query(mongochem.processQuery(query));
     }
   })
 
   $.ajax({
-    type: 'GET',
-    url: 'syntax.html',
-    data: $(this).attr('alt'),
-    dataType: 'html',
-    success: function(data) {
-        var popoverOptions = {
-          title: 'Query syntax',
-          placement: 'bottom',
-          trigger: 'hover',
-          html: true,
-          content: data
-        };
-        $('#help').popover(popoverOptions);
+    type : 'GET',
+    url : 'syntax.html',
+    data : $(this).attr('alt'),
+    dataType : 'html',
+    success : function(data) {
+      var popoverOptions = {
+        title : 'Query syntax',
+        placement : 'bottom',
+        trigger : 'hover',
+        html : true,
+        content : data
+      };
+      $('#help').popover(popoverOptions);
     },
-    error: function(jqXHR, textStatus, errorThrown ) {
+    error : function(jqXHR, textStatus, errorThrown) {
       console.log(errorThrown);
-  }
+    }
   })
-
 }
 
 mongochem.processQuery = function(query) {
 
-  var replaceMap = {'>=': '~gte~',
-                    '<=': '~lte~',
-                    '<': '~lt~',
-                    '>': '~gt~',
-                    '=': '~eq~',
-                    '!=': '~ne~',
-                    '&': '~and~',
-                    '|': '~or~'}
+  var replaceMap = {
+    '>=' : '~gte~',
+    '<=' : '~lte~',
+    '<' : '~lt~',
+    '>' : '~gt~',
+    '=' : '~eq~',
+    '!=' : '~ne~',
+    '&' : '~and~',
+    '|' : '~or~'
+  }
 
-  for (var op in replaceMap) {
+  for ( var op in replaceMap) {
     query = query.replace(op, replaceMap[op]);
   }
 
@@ -58,20 +60,20 @@ mongochem.processQuery = function(query) {
 
 mongochem.query = function(query) {
   var queryOptions = {
-    type: 'GET',
-    url: 'service/chemical/cjson',
-    data: {
-      q: query,
-      limit: 100
+    type : 'GET',
+    url : 'service/chemical/cjson',
+    data : {
+      q : query,
+      limit : 100
     },
-    dataType: 'json',
-    success: function(response) {
+    dataType : 'json',
+    success : function(response) {
       $('#query-input').removeClass("query-in-progress");
       $('#query-input').removeClass('invalid-query');
       $('#query-input').addClass('valid-query');
       mongochem.processResults(response['results']);
     },
-    error: function(jqXHR, textStatus, errorThrown ) {
+    error : function(jqXHR, textStatus, errorThrown) {
 
       if (jqXHR.status == 400) {
         $('#query-input').removeClass('valid-query');
@@ -95,26 +97,27 @@ mongochem.queueQuery = function(queryOptions) {
   var deferred = $.Deferred();
   var promise = deferred.promise();
 
-  function doQuery( next ) {
-      jqXHR = $.ajax(queryOptions);
-      jqXHR.then(next, next);
+  function doQuery(next) {
+    jqXHR = $.ajax(queryOptions);
+    jqXHR.then(next, next);
   }
 
   mongochem.queryQueue.queue(doQuery);
 
   promise.abort = function(msg) {
-    if ( jqXHR ) {
+    if (jqXHR) {
       return jqXHR.abort(msg);
     }
 
-    var queue = ajaxQueue.queue(),
-    index = $.inArray( doQuery, mongochem.queryQueue);
+    var queue = ajaxQueue.queue(), index = $.inArray(doQuery,
+        mongochem.queryQueue);
 
-    if ( index > -1 ) {
+    if (index > -1) {
       queue.splice(index, 1);
     }
 
-    deferred.rejectWith( queryOptions.context || queryOptions, [ promise, msg, "" ] );
+    deferred.rejectWith(queryOptions.context || queryOptions, [ promise, msg,
+        "" ]);
 
     return promise;
   };
@@ -123,30 +126,28 @@ mongochem.queueQuery = function(queryOptions) {
 };
 
 mongochem.formatFormula = function(formula) {
- var html = []
- var sub = false;
- var isDigit = /[\d]{1}/;
+  var html = []
+  var sub = false;
+  var isDigit = /[\d]{1}/;
 
-   for(var i=0; i<formula.length; i++) {
+  for ( var i = 0; i < formula.length; i++) {
     var c = formula[i];
     if (isDigit.test(c)) {
-     if (sub) {
-       html.push(c);
-     }
-     else {
-       html.push('<sub>');
-       html.push(c);
-       sub = true;
-     }
-   }
-   else {
-     html.push('</sub>');
-     html.push(c);
-     sub = false;
-   }
- }
+      if (sub) {
+        html.push(c);
+      } else {
+        html.push('<sub>');
+        html.push(c);
+        sub = true;
+      }
+    } else {
+      html.push('</sub>');
+      html.push(c);
+      sub = false;
+    }
+  }
 
- return html.join('');
+  return html.join('');
 }
 
 mongochem.diagramHTML = function(inchi) {
@@ -160,23 +161,100 @@ mongochem.diagramHTML = function(inchi) {
 }
 
 mongochem.processResults = function(cjsonList) {
-    var rows = d3.select('#results-table-body').selectAll("tr")
-        .data(cjsonList, function(d) {
-          return d['inchi'];
-        });
+  var rows = d3.select('#results-table-body').selectAll("tr").data(cjsonList,
+      function(d) {
+        return d['inchi'];
+      });
 
-    rows.enter().append("tr");
-    rows.exit().remove();
+  rows.enter().append("tr")
+  rows.exit().remove();
 
-    var cells = rows.selectAll("td")
-        .data(function(row) {
-               return [mongochem.diagramHTML(row['inchi']), row['name'],
-                       mongochem.formatFormula(row['formula']),
-                       row['mass'], row['inchi']];
-        })
-        .enter()
-        .append("td")
-        .html(function(d) { return d; });
+  $('#results-table-body tr').off('click').on('click', function(event) {
+    data = d3.select($(event.target).parent().get(0)).data();
+    mongochem.load(data[0].inchi);
+  });
 
+  var cells = rows.selectAll("td")
+      .data(
+          function(row) {
+            return [ mongochem.diagramHTML(row['inchi']), row['name'],
+                mongochem.formatFormula(row['formula']), row['mass'],
+                row['inchi'] ];
+          }).enter().append("td").html(function(d) {
+        return d;
+      });
+}
 
+mongochem.updateView = function() {
+  if (mongochem.viewport) {
+    mongochem.viewport.invalidateScene();
+  }
+}
+
+mongochem.connect = function(onConnect) {
+  mongochem.connection = {
+    sessionURL : "ws://ulmus:8082/ws",
+    name : "WebMolecule",
+    description : "Visualize molecules using VTK",
+    application : "mol"
+  }, loading = $(".loading"), mongochem.viewport = null;
+
+  // Connect to remote server
+  vtkWeb.connect(mongochem.connection, function(serverConnection) {
+    mongochem.connection = serverConnection;
+    onConnect();
+  }, function(code, reason) {
+    loading.hide();
+    alert(reason);
+  });
+}
+
+mongochem.setupViewport = function() {
+  // Create viewport
+  mongochem.viewport = vtkWeb.createViewport({
+    session : mongochem.connection.session
+  });
+  mongochem.viewport.bind(".viewport-container");
+
+  // Handle window resize
+  $(window).resize(function() {
+    if (mongochem.viewport) {
+      mongochem.viewport.render();
+    }
+  }).trigger('resize');
+}
+
+mongochem.stop = function() {
+  if (false && mongochem.connection.session) {
+    mongochem.viewport.unbind();
+    mongochem.connection.session.call('vtk:exit');
+    mongochem.connection.session.close();
+    mongochem.connection.session = null;
+  }
+}
+
+mongochem.load = function(inchi) {
+
+  var load = function() {
+    mongochem.connection.session.call('vtk:load', inchi).then(
+    // RPC success callback
+    function(res) {
+
+      if (mongochem.viewport == null)
+        mongochem.setupViewport();
+
+      mongochem.updateView();
+    },
+
+    // RPC error callback
+    function(error, desc) {
+      console.log("error: " + desc);
+    });
+  }
+
+  if (mongochem.connection == null) {
+    mongochem.connect(load);
+  } else {
+    load();
+  }
 }

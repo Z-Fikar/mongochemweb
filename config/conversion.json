@@ -1,0 +1,4 @@
+{
+  "baseUrl": "http://ulmus:8080/~cjh/mongochemweb/",
+  "cjsonToCmlPath": "/home/cjh/work/build/openchemistry/avogadrolibs/bin/avocjsontocml"
+}

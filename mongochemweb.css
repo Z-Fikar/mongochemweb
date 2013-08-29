@@ -7,6 +7,7 @@
 
 #input {
   width: 50%;
+  margin: 10px;
   float: left;
 }
 
@@ -25,4 +26,21 @@
 
 .popover {
   max-width: 500px;
+}
+
+#viewport {
+  position: relative;
+  left: 100px;
+  margin: 10px;
+  width: 400px;
+  height: 400px;
+}
+
+#table-div {
+  height: 100%; !important;
+  overflow-y: scroll;
+}
+
+embed {
+  pointer-events: none;
 }
