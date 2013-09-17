@@ -193,6 +193,13 @@ mongochem.updateView = function() {
   }
 }
 
+mongochem.initDefaultView = function() {
+  var defaultQuery = 'formula=CH*'
+  $('#query-input').val(defaultQuery);
+  mongochem.query(mongochem.processQuery(defaultQuery));
+  mongochem.load('InChI=1S/CH4NO5P/c2-1(3)7-8(4,5)6/h(H2,2,3)(H2,4,5,6)');
+}
+
 mongochem.init = function() {
   var config = {
     sessionManagerURL: "http://data.openchemistry.org/paraview",
@@ -211,10 +218,15 @@ mongochem.init = function() {
            alert(connection.error);
            window.close();
          }
+         // Load default view
+         else {
+           mongochem.initDefaultView();
+         }
        }, function(msg){
          $(".loading").hide();
          alert("The remote session did not properly start. Try to use embeded url.");
          mongochem.connection = {sessionURL: "ws://" + location.hostname + ":" + location.port + "/ws"};
+         mongochem.initDefaultView();;
        });
   }
 }
