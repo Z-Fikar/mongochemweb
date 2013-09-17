@@ -36,6 +36,8 @@ function main() {
       console.log(errorThrown);
     }
   })
+
+  mongochem.init();
 }
 
 mongochem.processQuery = function(query) {
@@ -191,13 +193,38 @@ mongochem.updateView = function() {
   }
 }
 
-mongochem.connect = function(onConnect) {
-  mongochem.connection = {
-    sessionURL : "ws://ulmus:8082/ws",
+mongochem.init = function() {
+  var config = {
+    sessionManagerURL: "http://data.openchemistry.org/paraview",
     name : "WebMolecule",
     description : "Visualize molecules using VTK",
     application : "mol"
-  }, loading = $(".loading"), mongochem.viewport = null;
+  };
+
+  if(!$('body').hasClass("initialized")) {
+    $('body').addClass("initialized");
+    vtkWeb.start( config,
+       function(connection){
+         mongochem.connection = connection;
+
+         if(connection.error) {
+           alert(connection.error);
+           window.close();
+         }
+       }, function(msg){
+         $(".loading").hide();
+         alert("The remote session did not properly start. Try to use embeded url.");
+         mongochem.connection = {sessionURL: "ws://" + location.hostname + ":" + location.port + "/ws"};
+       });
+  }
+}
+
+mongochem.connect = function(onConnect) {
+  loading = $(".loading"), mongochem.viewport = null;
+
+  if(location.protocol == "http:") {
+     mongochem.connection.sessionURL = mongochem.connection.sessionURL.replace("wss:","ws:");
+  }
 
   // Connect to remote server
   vtkWeb.connect(mongochem.connection, function(serverConnection) {
@@ -252,7 +279,7 @@ mongochem.load = function(inchi) {
     });
   }
 
-  if (mongochem.connection == null) {
+  if (mongochem.connection.session == null) {
     mongochem.connect(load);
   } else {
     load();
