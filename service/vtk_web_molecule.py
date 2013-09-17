@@ -28,7 +28,7 @@ import traceback
 # =============================================================================
 
 class _WebMolecule(wamp.ServerProtocol):
-    authKey = "vtkweb-secret"
+    authKey = "paraviewweb-secret"
 
     # Application configuration
     def __init__(self):
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Configure our current application
-    _WebMolecule.authKey = args.authKey
+    #_WebMolecule.authKey = args.authKey
 
     # Start server
     server.start_webserver(options=args, protocol=_WebMolecule)
