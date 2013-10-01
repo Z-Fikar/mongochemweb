@@ -3,6 +3,7 @@ import json
 from subprocess import Popen, PIPE
 import tempfile
 import os
+import sys
 
 config = {}
 with open ('../config/conversion.json') as fp:
@@ -15,9 +16,8 @@ def to_cml(inchi):
   if request.status_code == 200:
     cjson = request.json();
   else:
+    print >> sys.stderr, "Unable to access REST API: %s" % request.status_code
     return None
-
-  print cjson
 
   # Call convertion routine
   p = Popen([config['cjsonToCmlPath']], stdin=PIPE, stdout=PIPE, stderr=PIPE)
