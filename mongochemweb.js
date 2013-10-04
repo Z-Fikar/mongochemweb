@@ -4,6 +4,15 @@ mongochem.currentQuery = null;
 mongochem.viewport = null;
 mongochem.connection = null;
 
+
+function structureChanged() {
+  var smilesString = mongochem.jsmeApplet.smiles();
+  if (smilesString.length > 30) {
+    smilesString = smilesString.substring(0, 30) + "...";
+  }
+  $('#smiles-title').html(smilesString);
+};
+
 function main() {
   console.log("main");
   $('#query-input').bind("keyup", function() {
@@ -37,7 +46,29 @@ function main() {
     }
   })
 
+  $('#structure-search').click(function() {
+    if(!$('#jsme-dialog').hasClass("initialized")) {
+      $('#jsme-dialog').addClass("initialized");
+      $('#jsme-dialog').one('shown.bs.modal', function() {
+        mongochem.jsmeApplet = new JSApplet.JSME("jsme_container", "380px", "340px", {
+          "options" : "oldlook,star"
+        });
+        mongochem.jsmeApplet.setNotifyStructuralChangeJSfunction('structureChanged');
+      });
+    }
+    $('#jsme-dialog').modal();
+  });
+
+  $('#structure-search-button').click(function() {
+    mongochem.queryString('smiles='+mongochem.jsmeApplet.smiles());
+  });
+
   mongochem.init();
+}
+
+// Need to have this method to JSME complaining!
+function jsmeOnLoad() {
+
 }
 
 mongochem.processQuery = function(query) {
@@ -191,6 +222,11 @@ mongochem.updateView = function() {
   if (mongochem.viewport) {
     mongochem.viewport.invalidateScene();
   }
+}
+
+mongochem.queryString = function(query) {
+  $('#query-input').val(query);
+  mongochem.query(mongochem.processQuery(query));
 }
 
 mongochem.initDefaultView = function() {
