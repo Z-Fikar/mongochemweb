@@ -173,7 +173,7 @@ mongochem.processResults = function(cjsonList) {
 
   $('#results-table-body tr').off('click').on('click', function(event) {
     data = d3.select($(event.target).parent().get(0)).data();
-    mongochem.load(data[0].inchi);
+    mongochem.load(data[0]);
   });
 
   var cells = rows.selectAll("td")
@@ -195,9 +195,11 @@ mongochem.updateView = function() {
 
 mongochem.initDefaultView = function() {
   var defaultQuery = 'formula=CH*'
-  $('#query-input').val(defaultQuery);
-  mongochem.query(mongochem.processQuery(defaultQuery));
-  mongochem.load('InChI=1S/CH4NO5P/c2-1(3)7-8(4,5)6/h(H2,2,3)(H2,4,5,6)');
+  mongochem.queryString(defaultQuery);
+  mongochem.load({name: 'carbamic acid phosphono ester',
+    inchi: 'InChI=1S/CH4NO5P/c2-1(3)7-8(4,5)6/h(H2,2,3)(H2,4,5,6)',
+    formula: 'CH4NO5P',
+    mass: 141.019921});
 }
 
 mongochem.init = function() {
@@ -272,15 +274,23 @@ mongochem.stop = function() {
   }
 }
 
-mongochem.load = function(inchi) {
+mongochem.load = function(data) {
 
   var load = function() {
-    mongochem.connection.session.call('vtk:load', inchi).then(
+
+    mongochem.connection.session.call('vtk:load', data.inchi).then(
     // RPC success callback
     function(res) {
 
       if (mongochem.viewport == null)
         mongochem.setupViewport();
+
+      $('#3d-view-dialog').modal();
+      $('#molecule-name').html(data.name);
+      $('#molecule-info-name').html(data.name);
+      $('#molecule-info-formula').html(data.formula);
+      $('#molecule-info-weight').html(data.mass);
+      $('#molecule-info-inchi').html(data.inchi);
 
       mongochem.updateView();
     },
