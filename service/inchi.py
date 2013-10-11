@@ -11,12 +11,13 @@ with open ('../config/conversion.json') as fp:
 
 
 def to_cml(inchi):
-  request = requests.get('%s/service/chemical/cjson/?q=inchi~eq~%s' % (config['baseUrl'], inchi))
+  request_url = '%s/service/chemical/cjson?q=inchi~eq~%s' % (config['baseUrl'], inchi)
+  request = requests.get(request_url)
 
   if request.status_code == 200:
     cjson = request.json();
   else:
-    print >> sys.stderr, "Unable to access REST API: %s" % request.status_code
+    print >> sys.stderr, "Unable to access REST API at %s: %s" % (request_url, request.status_code)
     return None
 
   # Call convertion routine
