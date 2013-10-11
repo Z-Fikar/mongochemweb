@@ -218,9 +218,10 @@ mongochem.processResults = function(cjsonList) {
       });
 }
 
-mongochem.updateView = function() {
+mongochem.updateView = function(onDone) {
   if (mongochem.viewport) {
-    mongochem.viewport.invalidateScene();
+    mongochem.viewport.invalidateScene(onDone);
+//    mongochem.viewport.render();
   }
 }
 
@@ -314,27 +315,34 @@ mongochem.load = function(data) {
 
   var load = function() {
 
-    mongochem.connection.session.call('vtk:load', data.inchi).then(
-    // RPC success callback
-    function(res) {
+    console.log("data: " + data);
 
-      if (mongochem.viewport == null)
-        mongochem.setupViewport();
+    //$('#3d-view-dialog').one('shown.bs.modal', function() {
+      mongochem.connection.session.call('vtk:load', data.inchi).then(
+      // RPC success callback
+      function(res) {
 
-      $('#3d-view-dialog').modal();
-      $('#molecule-name').html(data.name);
-      $('#molecule-info-name').html(data.name);
-      $('#molecule-info-formula').html(data.formula);
-      $('#molecule-info-weight').html(data.mass);
-      $('#molecule-info-inchi').html(data.inchi);
+        if (mongochem.viewport == null)
+          mongochem.setupViewport();
 
-      mongochem.updateView();
-    },
+        $('#molecule-name').html(data.name);
+        $('#molecule-info-name').html(data.name);
+        $('#molecule-info-formula').html(data.formula);
+        $('#molecule-info-weight').html(data.mass);
+        $('#molecule-info-inchi').html(data.inchi);
 
-    // RPC error callback
-    function(error, desc) {
-      console.log("error: " + desc);
-    });
+        mongochem.updateView(function() {
+          $('#3d-view-dialog').modal();
+        });
+      },
+
+      // RPC error callback
+      function(error, desc) {
+        console.log("error: " + desc);
+      });
+    //});
+
+
   }
 
   if (mongochem.connection.session == null) {
