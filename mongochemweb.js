@@ -221,7 +221,7 @@ mongochem.processResults = function(cjsonList) {
 mongochem.updateView = function(onDone) {
   if (mongochem.viewport) {
     mongochem.viewport.invalidateScene(onDone);
-//    mongochem.viewport.render();
+    mongochem.viewport.render();
   }
 }
 
@@ -331,9 +331,15 @@ mongochem.load = function(data) {
         $('#molecule-info-weight').html(data.mass);
         $('#molecule-info-inchi').html(data.inchi);
 
+
+        $('#3d-view-dialog').one('shown.bs.modal', function() {
+          mongochem.updateView();
+        });
+
         mongochem.updateView(function() {
           $('#3d-view-dialog').modal();
         });
+
       },
 
       // RPC error callback
