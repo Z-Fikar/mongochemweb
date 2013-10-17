@@ -14,7 +14,7 @@ function structureChanged() {
 };
 
 function main() {
-  console.log("main");
+
   $('#query-input').bind("keyup", function() {
     var query = $('#query-input').val();
     if (query.length == 0) {
@@ -60,7 +60,7 @@ function main() {
   });
 
   $('#structure-search-button').click(function() {
-    mongochem.queryString('smiles='+mongochem.jsmeApplet.smiles());
+    mongochem.queryString('smiles~'+mongochem.jsmeApplet.smiles().toLowerCase());
   });
 
   mongochem.init();
@@ -74,11 +74,11 @@ function jsmeOnLoad() {
 mongochem.processQuery = function(query) {
 
   var replaceMap = {
+    '~' : '~slr~',
     '>=' : '~gte~',
     '<=' : '~lte~',
     '<' : '~lt~',
     '>' : '~gt~',
-    '=' : '~eq~',
     '!=' : '~ne~',
     '&' : '~and~',
     '|' : '~or~'
@@ -86,6 +86,11 @@ mongochem.processQuery = function(query) {
 
   for ( var op in replaceMap) {
     query = query.replace(op, replaceMap[op]);
+  }
+
+  // SMILES can have = in them
+  if (!/^\s*smiles\s*~.*/.test(query)) {
+    query = query.replace('=', '~eq~');
   }
 
   return query;
@@ -211,7 +216,7 @@ mongochem.processResults = function(cjsonList) {
       .data(
           function(row) {
             return [ mongochem.diagramHTML(row['inchi']), row['name'],
-                mongochem.formatFormula(row['formula']), row['mass'],
+                mongochem.formatFormula(row['formula']), row['properties']['molecular mass'],
                 row['inchi'] ];
           }).enter().append("td").html(function(d) {
         return d;
@@ -227,21 +232,22 @@ mongochem.updateView = function(onDone) {
 
 mongochem.queryString = function(query) {
   $('#query-input').val(query);
+  $('#query-input').addClass("query-in-progress");
   mongochem.query(mongochem.processQuery(query));
 }
 
 mongochem.initDefaultView = function() {
-  var defaultQuery = 'formula=CH*'
+  var defaultQuery = 'inchikey=PCZLXCMHYFKZET-UHFFFAOYSA-N'
   mongochem.queryString(defaultQuery);
-  mongochem.load({name: 'carbamic acid phosphono ester',
-    inchi: 'InChI=1S/CH4NO5P/c2-1(3)7-8(4,5)6/h(H2,2,3)(H2,4,5,6)',
-    formula: 'CH4NO5P',
-    mass: 141.019921});
+//  mongochem.load({name: '',
+//    inchi: 'InChI=1S/C21H11NOSSe/c1-2-14-10-23-11-17(14)19-12(1)3-6-16-15-5-4-13(21-22-7-8-24-21)9-18(15)25-20(16)19/h1-11H',
+//    formula: 'C21H11NOSSe',
+//    properties: {'molecular mass': 404.3499}});
 }
 
 mongochem.init = function() {
   var config = {
-    sessionManagerURL: "http://data.openchemistry.org/paraview",
+    sessionManagerURL: "http://localhost:9000/paraview",
     name : "WebMolecule",
     description : "Visualize molecules using VTK",
     application : "mol"
@@ -264,7 +270,7 @@ mongochem.init = function() {
        }, function(msg){
          $(".loading").hide();
          alert("The remote session did not properly start. Try to use embeded url.");
-         mongochem.connection = {sessionURL: "ws://" + location.hostname + ":" + location.port + "/ws"};
+         mongochem.connection = {sessionURL: "ws://ulmus:8081/ws"};
          mongochem.initDefaultView();;
        });
   }
@@ -303,7 +309,7 @@ mongochem.setupViewport = function() {
 }
 
 mongochem.stop = function() {
-  if (false && mongochem.connection.session) {
+  if (mongochem.connection.session) {
     mongochem.viewport.unbind();
     mongochem.connection.session.call('vtk:exit');
     mongochem.connection.session.close();
@@ -325,12 +331,73 @@ mongochem.load = function(data) {
         if (mongochem.viewport == null)
           mongochem.setupViewport();
 
-        $('#molecule-name').html(data.name);
-        $('#molecule-info-name').html(data.name);
-        $('#molecule-info-formula').html(data.formula);
-        $('#molecule-info-weight').html(data.mass);
-        $('#molecule-info-inchi').html(data.inchi);
+        if (data.name) {
+          $('#molecule-name').html(data.name);
+          $('#molecule-info-name').html(data.name);
+        }
+        else {
+          $('#molecule-info-name').parent().hide()
+        }
 
+        $('#molecule-info-formula').html(mongochem.formatFormula(data.formula));
+        $('#molecule-info-weight').html(data.properties['molecular mass']);
+
+        $('#molecule-info-smiles').html('');
+        $.get('service/chemical/smiles?q=inchi~eq~InChI='+data.inchi, function(smiles) {
+          $('#molecule-info-smiles').html(smiles);
+        })
+
+        $('#molecule-info-inchikey').html('');
+        $.get('service/chemical/inchikey?q=inchi~eq~InChI='+data.inchi, function(inchikey) {
+          $('#molecule-info-inchikey').html(inchikey);
+          $('#download-cjson').attr('download', $.trim(inchikey)+'.cjson')
+          $('#download-default').attr('download', $.trim(inchikey)+'.cjson')
+        })
+
+        if (data.properties['energy']) {
+          var energy = data.properties['energy'];
+
+          var alphaHomo = energy['alpha']['homo'];
+          var alphaLumo = energy['alpha']['lumo'];
+          var alphaGap = energy['alpha']['gap'];
+
+          var betaHomo = energy['beta']['homo'];
+          var betaLumo = energy['beta']['lumo'];
+          var betaGap = energy['beta']['gap'];
+
+          var total = energy['total'];
+
+          if (alphaHomo == betaHomo && alphaLumo == betaLumo) {
+            $('.energy').show();
+            $('#homo').html(alphaHomo);
+            $('#lumo').html(alphaLumo);
+            $('#gap').html(alphaGap);
+          }
+          else {
+            $('.alpha-beta-energy').show()
+            $('#alpha-homo').html(alphaHomo);
+            $('#alpha-lumo').html(alphaLumo);
+            $('#alpha-gap').html(alphaGap);
+
+            $('#beta-homo').html(betaHomo);
+            $('#beta-lumo').html(betaLumo);
+            $('#beta-gap').html(betaGap);
+          }
+
+          $('.total-energy').html(total)
+        }
+
+        if (data.properties['calculation']) {
+          var calc = data.properties['calculation'];
+          var theory = calc['theory'];
+          var basis = calc['basis'];
+          $('#theory').html(theory);
+          $('#basis').html(basis);
+        }
+
+        var cjson = JSON.stringify(data);
+        $('#download-cjson').attr('href','data:application/json,' + cjson);
+        $('#download-default').attr('href','data:application/json,' + cjson);
 
         $('#3d-view-dialog').one('shown.bs.modal', function() {
           mongochem.updateView();

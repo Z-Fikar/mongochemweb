@@ -28,7 +28,7 @@ import traceback
 # =============================================================================
 
 class _WebMolecule(wamp.ServerProtocol):
-    authKey = "paraviewweb-secret"
+    authKey = "vtkweb-secret"
 
     # Application configuration
     def __init__(self):
@@ -41,9 +41,11 @@ class _WebMolecule(wamp.ServerProtocol):
         path = inchi.to_cml(inchi_string)
         self.reader.SetFileName(path)
         self.reader.Update()
+        bounds = [0,0,0,0,0,0]
+        self.mapper.GetBounds(bounds)
         os.remove(path)
-        self.renderer.ResetCamera()
-        self.renderer.GetActiveCamera().Zoom(2.0);
+        self.renderer.ResetCamera(bounds)
+        self.renderer.GetActiveCamera().Zoom(1.5);
       except:
         print traceback.format_exc()
 
@@ -60,12 +62,12 @@ class _WebMolecule(wamp.ServerProtocol):
         if not self.view:
             self.reader = vtk.vtkCMLMoleculeReader()
             #self.reader.SetFileName('/home/cjh/work/VTKData/Data/porphyrin.cml')
-            mapper = vtk.vtkMoleculeMapper()
-            mapper.SetInputConnection(self.reader.GetOutputPort())
-            mapper.UseBallAndStickSettings()
+            self.mapper = vtk.vtkMoleculeMapper()
+            self.mapper.SetInputConnection(self.reader.GetOutputPort())
+            self.mapper.UseBallAndStickSettings()
 
-            actor = vtk.vtkActor()
-            actor.SetMapper(mapper)
+            self.actor = vtk.vtkActor()
+            self.actor.SetMapper(self.mapper)
 
             self.renderer = vtk.vtkRenderer()
             self.window = vtk.vtkRenderWindow()
@@ -75,7 +77,7 @@ class _WebMolecule(wamp.ServerProtocol):
             interactor.SetRenderWindow(self.window);
             interactor.GetInteractorStyle().SetCurrentStyleToTrackballCamera()
 
-            self.renderer.AddActor(actor);
+            self.renderer.AddActor(self.actor);
             self.renderer.SetBackground(1,1,1);
 
             # VTK Web application specific

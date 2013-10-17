@@ -12,6 +12,7 @@ with open ('../config/conversion.json') as fp:
 
 def to_cml(inchi):
   request_url = '%s/service/chemical/cjson?q=inchi~eq~%s' % (config['baseUrl'], inchi)
+
   request = requests.get(request_url)
 
   if request.status_code == 200:

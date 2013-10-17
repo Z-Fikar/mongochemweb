@@ -30,12 +30,14 @@ import re
 #   ~gte~  - numeric greater or equal than, has not meaning for strings.
 #   ~lt~   - numeric less than, has not meaning for strings.
 #   ~lte~  - numeric less or equal than, has not meaning for strings.
+#   ~slr~  - similarity search based on smile
 #
 # The comparison operators can be using with the follow string fields:
 #   inchi
 #   inchikey
 #   name
 #   formula
+#   smiles
 #
 # or the following numeric fields:
 #
@@ -65,6 +67,7 @@ LT = '~lt~'
 LTE = '~lte~'
 OR = '~or~'
 AND = '~and~'
+SIMILAR = '~slr~'
 
 # The root of the operator hierarchy
 class Operator(object):
@@ -74,6 +77,10 @@ class Operator(object):
 
   def query(self):
     pass
+
+class Similar(Operator):
+  def query(self):
+    return 'similarity?q=%s' % self.args[1]
 
 # basic comparison
 class Comparison(Operator):
@@ -100,8 +107,15 @@ class NumericEquals(Comparison):
 class StringEquals(Comparison):
   def query(self):
     value = self.args[1]
+
+    if self.args[0] == 'inchi':
+      value = value.replace('InChI=', '')
+
     if '*' in value:
       value = value.replace('*', '.*')
+      value = value.replace('(', '\(')
+      value = value.replace('[', '\[')
+      value = value.replace('+', '\+')
       value = re.compile('^%s$' % value)
 
     return {self.args[0]: value}
@@ -154,8 +168,9 @@ class Or(BooleanOp):
 integer = Word(nums).setParseAction(lambda t: int(t[0]))
 real = Combine(Word(nums) + "." + Word(nums)).setParseAction(lambda t: float(t[0]))
 numeric_field = oneOf('mass atomCount')
-string_field = oneOf('name formula inchi inchikey')
-string = Word(string.letters+string.digits+'=/-*[](), .')
+string_field = oneOf('name formula inchi inchikey smiles')
+smiles_field = oneOf('smiles')
+string = Word(string.letters+string.digits+'=/-+*[](), .')
 comparision = oneOf([EQ, NE, GT, GTE, LT, LTE])
 boolean = oneOf([AND, OR])
 comparison_operand = real | integer | numeric_field
@@ -182,6 +197,8 @@ boolean_expression = operatorPrecedence(comparison,
                            [(AND, 2, opAssoc.LEFT, BooleanOp),
                             (OR, 2, opAssoc.LEFT, BooleanOp)]
                           )
+similar_operand = smiles_field | string
+similar_expression = operatorPrecedence(similar_operand, [(SIMILAR, 2, opAssoc.LEFT, Similar)])
 
 class InvalidQuery(Exception):
   def __init__(self, query):
@@ -190,9 +207,37 @@ class InvalidQuery(Exception):
   def __str__(self, *args, **kwargs):
     return "Invalid query: %s" % self.query
 
+def _replace_key(d, key, new_key):
+  for k, v in d.iteritems():
+    if isinstance(v, dict):
+      _replace_key(v, key, new_key)
+
+    if k == key:
+      d[new_key] = v
+      del d[key]
+
+  return d
+
+def to_helium_query(query):
+  try:
+    result = similar_expression.parseString(query, parseAll=True)
+  except ParseException as e:
+    raise InvalidQuery(query)
+
+  if len(result) != 1:
+    raise InvalidQuery(query)
+
+  if not isinstance(result[0], Operator):
+    raise InvalidQuery(query)
+
+  q = result[0].query()
+
+  return q
+
 # main function used by external modules to convert query into dict that can
 # be used with pymongo find function.
 def to_mongo_query(query):
+
   try:
     result = boolean_expression.parseString(query, parseAll=True)
   except ParseException:
@@ -204,6 +249,8 @@ def to_mongo_query(query):
   if not isinstance(result[0], Operator):
     raise InvalidQuery(query)
 
-  print result[0]
+  q = result[0].query()
 
-  return result[0].query()
+  _replace_key(q, 'mass', 'descriptors.mass')
+
+  return q

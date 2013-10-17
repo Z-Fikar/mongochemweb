@@ -97,6 +97,7 @@ import re
 import bson.json_util
 import shlex
 import os
+import requests
 
 # add query parser module to path
 tangelo.paths(['../query'])
@@ -112,6 +113,7 @@ mime_types = {'png': 'image/png',
               'cjson': 'application/json',
               'inchi': 'text/plain',
               'inchikey': 'text/plain',
+              'smiles': 'text/plain',
               'count': 'text/plain' }
 
 default_limit = 50
@@ -119,15 +121,15 @@ default_limit = 50
 # load the configuration
 config = {}
 path = os.path.dirname(os.path.realpath(__file__))
-with open ('%s/../config/db.json' % (path)) as fp:
+with open ('%s/../config/chemical.json' % (path)) as fp:
   config = json.load(fp)
 
 # connect to a particular mongochem instance
 client = None
 def connect(server, db):
+  global client
   if not client:
-    global client
-    client = pymongo.Connection(server)[db]['molecules']
+    client = pymongo.Connection(server)[db]
 
   return client
 
@@ -143,11 +145,13 @@ def generate_mongo_projection(rep):
 
   if rep == 'png':
     proj = {'diagram': 1}
-  elif rep in ['svg', 'inchi', 'inchikey']:
+  elif rep == 'svg':
+    proj = {'diagram.svg': 1}
+  elif rep in ['inchi', 'inchikey', 'smiles']:
     proj = {rep: 1}
   elif rep == 'cjson':
     proj = { 'name': 1, 'inchi': 1, 'formula': 1, 'atoms': 1, 'bonds': 1,
-            'properties': 1, 'mass': 1 }
+             'descriptors.mass': 1, '3dStructure': 1}
 
   return proj
 
@@ -155,14 +159,14 @@ def generate_mongo_projection(rep):
 def process_cursor(cursor, trans):
   response = ""
   for mol in cursor:
-    response += "%s\n" % trans(mol)
+    response += "%s\n" % trans(cursor, mol)
 
   return response
 
 def process_cursor_to_list(cursor, trans):
   response = []
   for mol in cursor:
-    response.append(trans(mol))
+    response.append(trans(cursor, mol))
 
   return response
 
@@ -177,10 +181,10 @@ def result_to_response(rep, cursor):
   elif rep == 'svg':
     cursor.limit(1)
 
-    def process_svg(mol):
+    def process_svg(cursor, mol):
       svg = ''
-      if 'svg' in mol:
-        svg = mol['svg']
+      if 'diagram' in mol and 'svg' in mol['diagram']:
+        svg = mol['diagram']['svg']
 
       return svg
 
@@ -199,17 +203,38 @@ def result_to_response(rep, cursor):
     return svg
 
   elif rep == 'cjson':
-    def to_cjson(mol):
+    def to_cjson(cursor, mol):
       mol['chemical json'] = 0
       del mol['_id']
+      mol['properties'] = {'molecular mass': mol['descriptors']['mass']}
+      del mol['descriptors']
+
+      db = cursor.collection.database
+
+      if '3dStructure' in mol:
+        quantum = db.dereference(mol['3dStructure'])
+        del mol['3dStructure']
+
+        mol['atoms'] = quantum['atoms']
+        mol['bonds'] = quantum['bonds']
+
+        if 'energy' in quantum:
+          mol['properties']['energy'] = quantum['energy']
+
+        if 'calculation'in quantum:
+          mol['properties']['calculation'] = quantum['calculation']
+
       return mol
     result = {}
     result['results'] = process_cursor_to_list(cursor, to_cjson)
+
     return result
   elif rep == 'inchi':
-    return process_cursor(cursor, lambda mol: mol['inchi'])
+    return process_cursor(cursor, lambda cursor, mol: mol['inchi'])
   elif rep == 'inchikey':
-    return process_cursor(cursor, lambda mol: mol['inchikey'])
+    return process_cursor(cursor, lambda cursor, mol: mol['inchikey'])
+  elif rep == 'smiles':
+    return process_cursor(cursor, lambda cursor, mol: mol['smiles'])
   elif rep == 'count':
     count = cursor.count()
     return count
@@ -228,11 +253,11 @@ def execute_query(find, proj, rep, limit):
 
   while(retry_count>0):
     try:
-      coll = connect(config['server'], config['db'])
+      db = connect(config['server'], config['db'])
 
       tangelo.log(str(find))
 
-      cursor =  coll.find(find, proj)
+      cursor =  db['molecules'].find(find, proj)
       cursor.limit(limit)
 
       return result_to_response(rep, cursor)
@@ -273,6 +298,26 @@ def basic_query(args, kwargs):
 
   return execute_query(mongo_query, proj, rep, limit)
 
+def helium_query_to_mongo_query(query):
+  url = '%s/helium/%s' % (config['heliumUrl'], query)
+  tangelo.log (url)
+  r = requests.get(url)
+
+  cep_ids = []
+
+  if r.status_code == 200:
+    results = r.json()
+    hits = results['hits']
+    if len(hits) > 0:
+      for hit in hits:
+        cep_ids.append(hit['index'])
+  else:
+    tangelo.log("Error accessing helium: %s" % r.status_code)
+
+  mongo_query = {'cepId': {'$in': cep_ids}}
+
+  return mongo_query
+
 # process an advance query
 def advanced_query(args, kwargs):
   if len(args) != 1 or 'q' not in kwargs:
@@ -280,7 +325,11 @@ def advanced_query(args, kwargs):
 
   query_string = kwargs['q']
   try:
-    mongo_query = query.to_mongo_query(query_string)
+    if '~slr~' in query_string:
+      helium_query = query.to_helium_query(query_string)
+      mongo_query = helium_query_to_mongo_query(helium_query)
+    else:
+      mongo_query = query.to_mongo_query(query_string)
   except query.InvalidQuery:
     return tangelo.HTTPStatusCode(400, 'Invalid query')
 

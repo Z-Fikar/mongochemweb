@@ -1,4 +1,4 @@
 {
-  "baseUrl": "http://data.openchemistry.org",
-  "cjsonToCmlPath": "/home/tangelo/openchemistry-build/avogadrolibs/bin/avocjsontocml"
+  "baseUrl": "http://ulmus:8080/~cjh/mongochemweb/",
+  "cjsonToCmlPath": "/home/cjh/work/build/openchemistry/avogadrolibs/bin/avocjsontocml"
 }

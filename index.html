@@ -28,7 +28,8 @@
    </div>
    <i id=help class="glyphicon glyphicon-question-sign"></i>
    <button id=structure-search type="button" class="btn btn-primary"
-   style="position:relative; left: 20px; top: 10px;"">Structure Search</button>
+    style="position: relative; left: 20px; top: 10px;"">Structure
+    Search</button>
   </div>
  </div>
  <div style='height: 94%; width: 100%;' class=row>
@@ -40,7 +41,7 @@
       <th class="diagram">Diagram</th>
       <th class="name">Name</th>
       <th class="formula">Formula</th>
-      <th class="weight">Molecular Weight</th>
+      <th class="weight">Molecular Mass</th>
       <th class="inchi">InChI</th>
       <!-- <th class="smiles">SMILES</th> -->
     </thead>
@@ -61,30 +62,116 @@
    <div class="modal-body" style='height: 100%;'>
     <div class=row style='height: 100%;'>
      <div class=col-md-6 style='height: 90%;'>
-      <div id=viewport class="viewport-container" style='width: 100%; height: 90%;'></div>
+      <div id=viewport class="viewport-container"
+       style='width: 100%; height: 90%;'></div>
      </div>
      <div class=col-md-6>
-      <table class ="table table-hover">
-      <tbody>
-       <tr>
-        <td class=table-title>Name</td>
-        <td id=molecule-info-name></td>
-       </tr>
-       <tr>
-       <tr>
-        <td class=table-title>InChI</td>
-        <td id=molecule-info-inchi></td>
-       </tr>
-       <tr>
-        <td>Formula</td>
-        <td id=molecule-info-formula>Test</td>
-       </tr>
-       <tr>
-        <td>Molecular Weight</td>
-        <td id=molecule-info-weight>Test</td>
-       </tr>
-      </tbody>
+      <table class="table table-hover">
+       <tbody>
+        <tr>
+         <th class=table-title>Name</th>
+         <td id=molecule-info-name></td>
+        </tr>
+        <tr>
+        <tr>
+         <th class=table-title>InChIKey</th>
+         <td id=molecule-info-inchikey></td>
+        </tr>
+        <tr>
+         <th class=table-title>SMILES</th>
+         <td id=molecule-info-smiles></td>
+        </tr>
+        <tr>
+         <th>Formula</th>
+         <td id=molecule-info-formula></td>
+        </tr>
+        <tr>
+         <th>Molecular Mass</th>
+         <td id=molecule-info-weight>Test</td>
+        </tr>
+        <tr class=alpha-beta-energy style='display: none;'>
+         <th>Energy</th>
+         <td>
+          <table>
+           <tr class=alpha-beta-energy style='display: none;'>
+            <th></th>
+            <th>Alpha</th>
+            <th>Beta</th>
+           <tr>
+           <tr class=alpha-beta-energy style='display: none;'>
+            <th>Homo</th>
+            <td id=alpha-homo>34</td>
+            <td id=beta-homo>34</td>
+           </tr>
+           <tr class=alpha-beta-energy style='display: none;'>
+            <th>Lumo</th>
+            <td id=alpha-lumo>34</td>
+            <td id=beta-lumo>34</td>
+           </tr>
+           <tr class=alpha-beta-energy style='display: none;'>
+            <th>Gap</th>
+            <td id=alpha-gap>34</td>
+            <td id=beta-gap>34</td>
+           </tr>
+           <tr class=alpha-beta-energy style='display: none;'>
+            <th>Total</th>
+            <td class=total-energy colspan='2'>234</td>
+           </tr>
+           </td>
+          </table>
+        </tr>
+        <tr class=energy style='display: none;'>
+         <th>Energy</th>
+         <td>
+          <table>
+           <tr class=energy style='display: none;'>
+            <th>Homo</th>
+            <td id=homo>34</td>
+           </tr>
+           <tr class=energy style='display: none;'>
+            <th>Lumo</th>
+            <td id=lumo>34</td>
+           </tr>
+           <tr class=energy style='display: none;'>
+            <th>Gap</th>
+            <td id=gap>34</td>
+           </tr>
+           <tr class=energy style='display: none;'>
+            <th>Total</th>
+            <td class=total-energy colspan='2'>234</td>
+           </tr>
+          </table>
+         </td>
+        </tr>
+        <tr>
+         <th>Calculation</th>
+         <td>
+          <table>
+           <tr>
+            <th>Theory</th>
+            <td id=theory></td>
+           </tr>
+           <tr>
+            <th>Basis</th>
+            <td id=basis></td>
+           </tr>
+          </table>
+         </td>
+        </tr>
+       </tbody>
       </table>
+      <div class="btn-group">
+       <a id=download-default type="button" class="btn btn-primary">
+       <span class="glyphicon glyphicon-download"></span>
+       Download</a>
+       <button type="button" class="btn btn-primary dropdown-toggle"
+        data-toggle="dropdown">
+        <span class="caret"></span>
+       </button>
+       <ul class="dropdown-menu" role="menu">
+        <li><a id=download-cjson href="#"'>CJSON</a></li>
+       </ul>
+      </div>
      </div>
     </div>
    </div>
@@ -102,12 +189,13 @@
      aria-hidden="true">&times;</button>
     <h4 id=smiles-title></h4>
    </div>
-   <div id="jsme_container" class="modal-body" >
-<!--     <div id="jsme_container" style='height: 500px; width: 500px;'></div> -->
+   <div id="jsme_container" class="modal-body">
+    <!--     <div id="jsme_container" style='height: 500px; width: 500px;'></div> -->
    </div>
    <div class="modal-footer">
-   <button id=structure-search-button type="button" class="btn btn-primary" data-dismiss="modal">Search</button>
-  </div>
+    <button id=structure-search-button type="button"
+     class="btn btn-primary" data-dismiss="modal">Search</button>
+   </div>
   </div>
   <!-- /.modal-content -->
  </div>
