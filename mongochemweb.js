@@ -84,6 +84,14 @@ mongochem.processQuery = function(query) {
     '|' : '~or~'
   }
 
+  // If the the user has typed an inchi the run inchi=* query
+  if (/^InChI=.*/.test(query)) {
+    query = 'inchi='+query;
+  }
+
+  // Strip of prefix
+  query = query.replace('InChI=', '');
+
   for ( var op in replaceMap) {
     query = query.replace(op, replaceMap[op]);
   }
