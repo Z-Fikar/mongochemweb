@@ -245,7 +245,7 @@ mongochem.queryString = function(query) {
 }
 
 mongochem.initDefaultView = function() {
-  var defaultQuery = 'inchikey=PCZLXCMHYFKZET-UHFFFAOYSA-N'
+  var defaultQuery = 'mass>400'
   mongochem.queryString(defaultQuery);
 //  mongochem.load({name: '',
 //    inchi: 'InChI=1S/C21H11NOSSe/c1-2-14-10-23-11-17(14)19-12(1)3-6-16-15-5-4-13(21-22-7-8-24-21)9-18(15)25-20(16)19/h1-11H',
