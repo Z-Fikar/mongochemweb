@@ -225,7 +225,7 @@ mongochem.processResults = function(cjsonList) {
           function(row) {
             return [ mongochem.diagramHTML(row['inchi']), row['name'],
                 mongochem.formatFormula(row['formula']), row['properties']['molecular mass'],
-                row['inchi'] ];
+                'InChI='+row['inchi'] ];
           }).enter().append("td").html(function(d) {
         return d;
       });
