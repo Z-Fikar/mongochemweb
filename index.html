@@ -20,7 +20,7 @@
 <body onload="main()" onbeforeunload="stop()"
  onunload="mongochem.stop()" style='height: 100%;'>
  <div class=row>
-  <div class=col-md-11>
+  <div class=col-md-10>
    <div id=input class="input-group">
     <span class=input-group-addon><i
      class="glyphicon glyphicon-search"></i></span> <input id=query-input
@@ -31,6 +31,9 @@
     style="position: relative; left: 20px; top: 10px;"">Structure
     Search</button>
   </div>
+  <div class=col-md-1>
+  <span class="label label-warning" style='font-size: 18pt; position: relative; top: 13px;'>Alpha</span>
+   </div>
  </div>
  <div style='height: 94%; width: 100%;' class=row>
   <div style='height: 100%;' id=table-div class=col-md-12>
