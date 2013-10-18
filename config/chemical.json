@@ -1,0 +1,5 @@
+{
+  "server": "mongochem",
+  "db": "cep",
+  "heliumUrl": "http://mongochem:8088"
+}
