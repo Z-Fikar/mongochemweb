@@ -339,6 +339,8 @@ mongochem.load = function(data) {
         if (mongochem.viewport == null)
           mongochem.setupViewport();
 
+        mongochem.viewport.resetViewId();
+
         if (data.name) {
           $('#molecule-name').html(data.name);
           $('#molecule-info-name').html(data.name);

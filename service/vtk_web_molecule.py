@@ -37,6 +37,35 @@ class _WebMolecule(wamp.ServerProtocol):
 
     @exportRpc
     def load(self, inchi_string):
+
+      self.reader = vtk.vtkCMLMoleculeReader()
+      #self.reader.SetFileName('/home/cjh/work/VTKData/Data/porphyrin.cml')
+      self.mapper = vtk.vtkMoleculeMapper()
+      self.mapper.SetInputConnection(self.reader.GetOutputPort())
+      self.mapper.UseBallAndStickSettings()
+
+      self.actor = vtk.vtkActor()
+      self.actor.SetMapper(self.mapper)
+
+      self.renderer = vtk.vtkRenderer()
+      self.window = vtk.vtkRenderWindow()
+      self.window.AddRenderer(self.renderer);
+
+      interactor = vtk.vtkRenderWindowInteractor()
+      interactor.SetRenderWindow(self.window);
+      interactor.GetInteractorStyle().SetCurrentStyleToTrackballCamera()
+
+      self.renderer.AddActor(self.actor);
+      self.renderer.SetBackground(1,1,1);
+
+      # VTK Web application specific
+      _WebMolecule.view = self.window
+
+      # VTK Web application specific
+      _WebMolecule.view = self.window
+      self.Application.GetObjectIdMap().SetActiveObject("VIEW", self.window)
+
+
       try:
         path = inchi.to_cml(inchi_string)
         self.reader.SetFileName(path)
