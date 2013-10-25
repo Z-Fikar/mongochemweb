@@ -10,8 +10,8 @@ with open ('../config/conversion.json') as fp:
   config = json.load(fp)
 
 
-def to_cml(inchi):
-  request_url = '%s/service/chemical/cjson?q=inchi~eq~%s' % (config['baseUrl'], inchi)
+def to_cml(inchikey):
+  request_url = '%s/service/chemical/cjson?q=inchikey~eq~%s' % (config['baseUrl'], inchikey)
 
   request = requests.get(request_url)
 

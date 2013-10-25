@@ -196,9 +196,9 @@ mongochem.formatFormula = function(formula) {
   return html.join('');
 }
 
-mongochem.diagramHTML = function(inchi) {
+mongochem.diagramHTML = function(inchikey) {
   var html = '<embed style="width: 200px;" src="';
-  var url = 'service/chemical/svg?q=inchi~eq~' + inchi;
+  var url = 'service/chemical/svg?q=inchikey~eq~' + inchikey;
 
   html += url;
   html += '" type="image/svg+xml" />';
@@ -223,7 +223,7 @@ mongochem.processResults = function(cjsonList) {
   var cells = rows.selectAll("td")
       .data(
           function(row) {
-            return [ mongochem.diagramHTML(row['inchi']), row['name'],
+            return [ mongochem.diagramHTML(row['inchikey']), row['name'],
                 mongochem.formatFormula(row['formula']), row['properties']['molecular mass'],
                 'InChI='+row['inchi'] ];
           }).enter().append("td").html(function(d) {
@@ -332,7 +332,7 @@ mongochem.load = function(data) {
     console.log("data: " + data);
 
     //$('#3d-view-dialog').one('shown.bs.modal', function() {
-      mongochem.connection.session.call('vtk:load', data.inchi).then(
+      mongochem.connection.session.call('vtk:load', data.inchikey).then(
       // RPC success callback
       function(res) {
 
@@ -353,16 +353,13 @@ mongochem.load = function(data) {
         $('#molecule-info-weight').html(data.properties['molecular mass']);
 
         $('#molecule-info-smiles').html('');
-        $.get('service/chemical/smiles?q=inchi~eq~InChI='+data.inchi, function(smiles) {
+        $.get('service/chemical/smiles?q=inchikey~eq~'+data.inchikey, function(smiles) {
           $('#molecule-info-smiles').html(smiles);
         })
 
-        $('#molecule-info-inchikey').html('');
-        $.get('service/chemical/inchikey?q=inchi~eq~InChI='+data.inchi, function(inchikey) {
-          $('#molecule-info-inchikey').html(inchikey);
-          $('#download-cjson').attr('download', $.trim(inchikey)+'.cjson')
-          $('#download-default').attr('download', $.trim(inchikey)+'.cjson')
-        })
+        $('#molecule-info-inchikey').html(data.inchikey);
+        $('#download-cjson').attr('download', $.trim(data.inchikey)+'.cjson')
+        $('#download-default').attr('download', $.trim(data.inchikey)+'.cjson')
 
         if (data.properties['energy']) {
           var energy = data.properties['energy'];

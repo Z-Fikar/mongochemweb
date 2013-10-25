@@ -36,7 +36,7 @@ class _WebMolecule(wamp.ServerProtocol):
       wamp.ServerProtocol.__init__(self)
 
     @exportRpc
-    def load(self, inchi_string):
+    def load(self, inchikey):
 
       self.reader = vtk.vtkCMLMoleculeReader()
       #self.reader.SetFileName('/home/cjh/work/VTKData/Data/porphyrin.cml')
@@ -67,7 +67,7 @@ class _WebMolecule(wamp.ServerProtocol):
 
 
       try:
-        path = inchi.to_cml(inchi_string)
+        path = inchi.to_cml(inchikey)
         self.reader.SetFileName(path)
         self.reader.Update()
         bounds = [0,0,0,0,0,0]
