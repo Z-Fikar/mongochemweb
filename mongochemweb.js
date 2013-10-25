@@ -110,7 +110,7 @@ mongochem.query = function(query) {
     url : 'service/chemical/cjson',
     data : {
       q : query,
-      limit : 100
+      limit : 40
     },
     dataType : 'json',
     success : function(response) {
