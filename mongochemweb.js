@@ -454,9 +454,12 @@ mongochem.load = function(data) {
         xyz = mongochem.encodeCharacter(xyz);
 
         $('#download-xyz').attr('href','data:chemical/x-xyz,' + xyz);
-        $('#download-xyz').attr('download', $.trim(data.inchikey)+'.xyz')
+        $('#download-xyz').attr('download', $.trim(data.inchikey)+'.xyz');
         $('#download-default').attr('href','data:chemical/x-xyz,' + xyz);
-        $('#download-default').attr('download', $.trim(data.inchikey)+'.xyz')
+        $('#download-default').attr('download', $.trim(data.inchikey)+'.xyz');
+
+        $('#download-cml').attr('href','service/chemical/cml?q=inchikey~eq~'+data.inchikey);
+        $('#download-cml').attr('download', $.trim(data.inchikey)+'.cml');
 
         $('#3d-view-dialog').one('shown.bs.modal', function() {
           mongochem.updateView();
