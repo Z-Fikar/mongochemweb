@@ -334,9 +334,13 @@ def advanced_query(args, kwargs):
     return tangelo.HTTPStatusCode(400, 'Invalid query')
 
   rep = args[0]
-  proj = generate_mongo_projection(args[0])
+  proj = generate_mongo_projection(rep)
 
   limit  = getlimit(kwargs)
+
+  if rep == 'cjson':
+    complete_data = {'$and': [{'3dStructure': {'$exists': 1}}, {'diagram': {'$exists':1}}]}
+    mongo_query = {'$and': [complete_data, mongo_query]}
 
   return execute_query(mongo_query, proj, rep, limit)
 
