@@ -19,7 +19,7 @@ except ImportError:
     # the source for the same as _argparse and we use it instead.
     import _argparse as argparse
 
-import inchi
+import converter
 import sys
 import traceback
 
@@ -67,7 +67,7 @@ class _WebMolecule(wamp.ServerProtocol):
 
 
       try:
-        path = inchi.to_cml(inchikey)
+        path = converter.inchikey_to_cml_file(inchikey)
         self.reader.SetFileName(path)
         self.reader.Update()
         bounds = [0,0,0,0,0,0]

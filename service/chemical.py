@@ -103,6 +103,7 @@ import requests
 tangelo.paths(['../query'])
 
 import query
+import converter
 
 structure_search_keys = ['name', 'formula', 'inchi', 'inchikey', 'mass', 'atomCount']
 representations = ['png', 'svg', 'cjson', 'inchi', 'inchikey', 'count']
@@ -114,7 +115,8 @@ mime_types = {'png': 'image/png',
               'inchi': 'text/plain',
               'inchikey': 'text/plain',
               'smiles': 'text/plain',
-              'count': 'text/plain' }
+              'count': 'text/plain',
+              'cml': 'application/xml' }
 
 default_limit = 50
 
@@ -149,7 +151,7 @@ def generate_mongo_projection(rep):
     proj = {'diagram.svg': 1}
   elif rep in ['inchi', 'inchikey', 'smiles']:
     proj = {rep: 1}
-  elif rep == 'cjson':
+  elif rep in ['cjson', 'cml']:
     proj = { 'name': 1, 'inchi': 1, 'inchikey': 1, 'formula': 1, 'atoms': 1, 'bonds': 1,
              'descriptors.mass': 1, '3dStructure': 1}
 
@@ -174,6 +176,29 @@ def process_cursor_to_list(cursor, trans):
 def result_to_response(rep, cursor):
 
   tangelo.content_type(mime_types[rep])
+
+  def to_cjson(cursor, mol):
+    mol['chemical json'] = 0
+    del mol['_id']
+    mol['properties'] = {'molecular mass': mol['descriptors']['mass']}
+    del mol['descriptors']
+
+    db = cursor.collection.database
+
+    if '3dStructure' in mol:
+      quantum = db.dereference(mol['3dStructure'])
+      del mol['3dStructure']
+
+      mol['atoms'] = quantum['atoms']
+      mol['bonds'] = quantum['bonds']
+
+      if 'energy' in quantum:
+        mol['properties']['energy'] = quantum['energy']
+
+      if 'calculation'in quantum:
+        mol['properties']['calculation'] = quantum['calculation']
+
+    return mol
 
   if rep ==  'png':
     cursor.limit(1)
@@ -203,32 +228,7 @@ def result_to_response(rep, cursor):
     return svg
 
   elif rep == 'cjson':
-    def to_cjson(cursor, mol):
-      mol['chemical json'] = 0
-      del mol['_id']
-      mol['properties'] = {'molecular mass': mol['descriptors']['mass']}
-      del mol['descriptors']
-
-      db = cursor.collection.database
-
-      if '3dStructure' in mol:
-        quantum = db.dereference(mol['3dStructure'])
-        del mol['3dStructure']
-
-        mol['atoms'] = quantum['atoms']
-        mol['bonds'] = quantum['bonds']
-
-        if 'energy' in quantum:
-          mol['properties']['energy'] = quantum['energy']
-
-        if 'calculation'in quantum:
-          mol['properties']['calculation'] = quantum['calculation']
-
-      return mol
-    result = {}
-    result['results'] = process_cursor_to_list(cursor, to_cjson)
-
-    return result
+    return {'results': process_cursor_to_list(cursor, to_cjson)}
   elif rep == 'inchi':
     return process_cursor(cursor, lambda cursor, mol: mol['inchi'])
   elif rep == 'inchikey':
@@ -238,6 +238,15 @@ def result_to_response(rep, cursor):
   elif rep == 'count':
     count = cursor.count()
     return count
+  elif rep == 'cml':
+    cml_body = ""
+    for cjson in process_cursor_to_list(cursor, to_cjson):
+      cml = converter.cjson_to_cml(cjson)
+      # strip of xml declaration so the result is valid xml
+      cml = re.sub('^<\?xml.*\?>', '',cml)
+      cml_body = cml_body + cml
+
+    return '<?xml version="1.0" encoding="UTF-8"?><cml>%s</cml>' % cml_body
 
   return ""
 
