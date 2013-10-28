@@ -403,6 +403,8 @@ mongochem.load = function(data) {
         }
 
         var cjson = JSON.stringify(data);
+        cjson = cjson.replace(/\s/g, '%20')
+
         $('#download-cjson').attr('href','data:application/json,' + cjson);
         $('#download-default').attr('href','data:application/json,' + cjson);
 
