@@ -28,11 +28,31 @@
   max-width: 500px;
 }
 
-#table-div {
+.scroll-div {
   height: 100%; !important;
   overflow-y: scroll;
 }
 
 embed {
   pointer-events: none;
+}
+
+.molecule-card {
+  display: inline-block;
+  width: 450px;
+  height: 300px;
+  margin-top: 10px;
+  margin-bottom: 0px;
+  margin-left: 10px;
+  margin-right: 0px;
+}
+
+.molecule-card-hover {
+    background-color: #f5f5f5;
+}
+
+.diagram {
+  width: 200px;
+  padding-left: 0px;
+  padding-right: 0px;
 }

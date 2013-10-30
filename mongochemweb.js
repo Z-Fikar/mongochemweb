@@ -77,6 +77,8 @@ function main() {
     mongochem.queryString('smiles~'+mongochem.jsmeApplet.smiles().toLowerCase());
   });
 
+  $('#view-tab a[href="#card-view-tab"]').tab('show');
+
   mongochem.init();
 }
 
@@ -220,7 +222,8 @@ mongochem.diagramHTML = function(inchikey) {
   return html;
 }
 
-mongochem.processResults = function(cjsonList) {
+
+mongochem.processResultsTableView = function(cjsonList) {
   var rows = d3.select('#results-table-body').selectAll("tr").data(cjsonList,
       function(d) {
         return d['inchi'];
@@ -243,6 +246,189 @@ mongochem.processResults = function(cjsonList) {
           }).enter().append("td").html(function(d) {
         return d;
       });
+}
+
+mongochem.energyTableAlphaBeta = function(data) {
+  var table = $('<table>').append(
+      $('<tr>', { class: 'molecule-card-alpha-beta-energy'}).append(
+                    $('<th>'),
+                    $('<th>').html('Alpha'),
+                    $('<th>').html('Beta')
+                ),
+      $('<tr>', { class: 'molecule-card-alpha-beta-energy'}).append(
+                    $('<th>').html('Homo'),
+                    $('<td>', {id: 'molecule-card-alpha-homo'}),
+                    $('<td>', {id: 'molecule-card-beta-homo'})
+                ),
+      $('<tr>', { class: 'molecule-card-alpha-beta-energy'}).append(
+                    $('<th>').html('Lumo'),
+                    $('<td>', {id: 'molecule-card-alpha-lumo'}),
+                    $('<td>', {id: 'molecule-card-beta-lumo'})
+                ),
+      $('<tr>', { class: 'molecule-card-alpha-beta-energy'}).append(
+                    $('<th>').html('Gap'),
+                    $('<td>', {id: 'molecule-card-alpha-gap'}),
+                    $('<td>', {id: 'molecule-card-beta-gap'})
+                ),
+      $('<tr>', { class: 'molecule-card-alpha-beta-energy'}).append(
+                    $('<th>').html('Total'),
+                    $('<td>', {class: 'molecule-card-total-energy', colspan: '2'})
+                )
+  )
+
+  return table
+}
+
+mongochem.energyTable = function(data) {
+  var table = $('<table>').append(
+      $('<tr>', { class: 'molecule-card-energy'}).append(
+                    $('<th>').html('Homo'),
+                    $('<td>', {id: 'molecule-card-homo'})
+                ),
+      $('<tr>', { class: 'molecule-card-energy'}).append(
+                    $('<th>').html('Lumo'),
+                    $('<td>', {id: 'molecule-card-lumo'})
+                ),
+      $('<tr>', { class: 'molecule-card-energy'}).append(
+                    $('<th>').html('Gap'),
+                    $('<td>', {id: 'molecule-card-gap'})
+                ),
+      $('<tr>', { class: 'molecule-card-energy'}).append(
+                    $('<th>').html('Total'),
+                    $('<td>', {class: 'molecule-card-total-energy', colspan: '2'})
+                )
+  )
+
+  return table
+}
+
+
+mongochem.moleculeCard = function(data) {
+  var card = $('<div>', {class: 'panel panel-default molecule-card'})
+
+  card.append(
+        $('<div>', {class: 'panel-heading'}).html(
+            data['inchikey']
+        ),
+        $('<div>', {class: 'panel-body'}).append(
+            $('<div>', {class: 'row'}).append(
+                $('<div>', {class: 'diagram col-md-6'}).html(
+                    $(mongochem.diagramHTML(data['inchikey']))
+                    ),
+                $('<div>', {class: 'col-md-6'}).append(
+                    $('<table>', {class: 'table'}).append(
+                        $('<tbody>', {id: 'card-table-body'}).append(
+                            $('<tr>').append(
+                                $('<th>').html('Formula'),
+                                $('<td>', {id: 'molecule-card-formula' }).html(
+                                      $(mongochem.formatFormula(data['formula']))
+                                    )
+                            ),
+                            $('<tr>').append(
+                                $('<th>').html('Mass'),
+                                $('<td>', {id: 'molecule-card-mass' }).html(
+                                      data['properties']['molecular mass']
+                                    )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+  )
+
+  if (data.properties['energy']) {
+    var energy = data.properties['energy'];
+
+    var alphaHomo = "";
+    var alphaLumo = "";
+    var alphaGap = "";
+
+    if ('alpha' in energy) {
+      alphaHomo = energy['alpha']['homo'];
+      alphaLumo = energy['alpha']['lumo'];
+      alphaGap = energy['alpha']['gap'];
+    }
+
+    var betaHomo = "";
+    var betaLumo = "";
+    var betaGap = "";
+
+    if ('beta' in energy) {
+      betaHomo = energy['beta']['homo'];
+      betaLumo = energy['beta']['lumo'];
+      betaGap = energy['beta']['gap'];
+    }
+
+    var total = energy['total'].toFixed(2);
+
+    var energyTable = null;
+    if (alphaHomo == betaHomo && alphaLumo == betaLumo) {
+      energyTable = mongochem.energyTable(data);
+      $('#molecule-card-homo', energyTable).html(alphaHomo);
+      $('#molecule-card-lumo', energyTable).html(alphaLumo);
+      $('#molecule-card-gap', energyTable).html(alphaGap);
+    }
+    else {
+      energyTable = mongochem.energyTableAlphaBeta(data)
+      $('#molecule-card-alpha-homo', energyTable).html(alphaHomo);
+      $('#molecule-card-alpha-lumo', energyTable).html(alphaLumo);
+      $('#molecule-card-alpha-gap', energyTable).html(alphaGap);
+
+      $('#molecule-card-beta-homo', energyTable).html(betaHomo);
+      $('#molecule-card-beta-lumo', energyTable).html(betaLumo);
+      $('#molecule-card-beta-gap', energyTable).html(betaGap);
+    }
+
+    $('#card-table-body', card).append(
+        $('<tr>').append(
+            $('<th>').html('Energy'),
+            $('<td>').append(
+                energyTable
+            )
+        )
+    )
+
+    $('.molecule-card-total-energy', card).html(total)
+  }
+
+  card.mouseenter(function(event) {
+    card.addClass('molecule-card-hover');
+  })
+
+  card.mouseleave(function(event) {
+    card.removeClass('molecule-card-hover');
+  })
+
+
+  return card[0];
+}
+
+mongochem.processResultsCardView = function(cjsonList) {
+  var cards = d3.select('#cards').selectAll("div .molecule-card").data(cjsonList,
+         function(d) {
+           return d['inchikey'];
+         });
+
+  cards.enter().append(function(d) {
+    return mongochem.moleculeCard(d);
+  });
+  cards.exit().remove();
+
+  $('#cards > div').off('click').on('click', function(event) {
+    var cards = $(event.target).parents('.molecule-card');
+
+    if (cards.length == 1) {
+      data = d3.select(cards[0]).data();
+      mongochem.load(data[0]);
+    }
+  });
+}
+
+
+mongochem.processResults = function(cjsonList) {
+  mongochem.processResultsTableView(cjsonList);
+  mongochem.processResultsCardView(cjsonList);
 }
 
 mongochem.updateView = function(onDone) {
@@ -352,8 +538,6 @@ mongochem.toXYZ = function(cjson) {
     atomCount++;
   }
 
-  console.log(xyz);
-
   return atomCount + "\nGenerated by MongoChemWeb\n" + xyz;
 }
 
@@ -362,7 +546,6 @@ mongochem.encodeCharacter = function (string) {
 
   for(var reg in encoding) {
     var tmp = new RegExp(reg, 'g');
-    console.log(tmp);
     string = string.replace(tmp, encoding[reg])
   }
 
@@ -372,8 +555,6 @@ mongochem.encodeCharacter = function (string) {
 mongochem.load = function(data) {
 
   var load = function() {
-
-    console.log("data: " + data);
 
     //$('#3d-view-dialog').one('shown.bs.modal', function() {
       mongochem.connection.session.call('vtk:load', data.inchikey).then(

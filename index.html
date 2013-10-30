@@ -16,9 +16,8 @@
 <link href="css/bootstrap.css" rel=stylesheet type=text/css>
 <link href="css/jquery-ui.css" rel=stylesheet type=text/css>
 <link href="mongochemweb.css" rel=stylesheet type=text/css>
-<link rel="icon"
-      type="image/icon"
-      href="http://data.openchemistry.org/img/favicon.ico"/>
+<link rel="icon" type="image/icon"
+ href="http://data.openchemistry.org/img/favicon.ico" />
 </head>
 <body onload="main()" onbeforeunload="stop()"
  onunload="mongochem.stop()" style='height: 100%;'>
@@ -35,33 +34,66 @@
     Search</button>
   </div>
   <div class=col-md-1>
-   <embed src="img/OpenChemistry_Logo.svg" style='position: relative; top: -13px;' type="image/svg+xml" width='100px' height='100px'/>
+   <embed src="img/OpenChemistry_Logo.svg"
+    style='position: relative; top: -13px;' type="image/svg+xml"
+    width='100px' height='100px' />
   </div>
   <div class=col-md-1>
-    <span class="label label-warning" style='font-size: 15pt; position: relative; top: 13px;'>Alpha</span>
+   <span class="label label-warning"
+    style='font-size: 15pt; position: relative; top: 13px;'>Alpha</span>
   </div>
 
  </div>
- <div style='height: 80%; width: 100%;' class=row>
-  <div style='height: 100%;' id=table-div class=col-md-12>
-   <table id="results-table" class="table table-hover"
-    style="float: none">
-    <thead>
-     <tr>
-      <th class="diagram">Diagram</th>
-      <th class="name">Name</th>
-      <th class="formula">Formula</th>
-      <th class="weight">Mass</th>
-      <th class="inchi">InChI</th>
-      <!-- <th class="smiles">SMILES</th> -->
-    </thead>
-    <tbody id="results-table-body">
-    </tbody>
-   </table>
+ <div class=row>
+  <div class=col-md-12>
+   <div id=tab style='height: 100%;'>
+    <ul class="nav nav-pills" id=view-tab style='padding-left: 10px;'>
+     <li class="active"><a href="#card-view-tab" data-toggle="tab">Card
+       View</a></li>
+     <li><a href="#table-view-tab" data-toggle="tab">Table View</a></li>
+    </ul>
+    <div class="tab-content" style='height: 100%;'>
+     <div id=table-view-tab class="tab-pane" style='padding-left: 10px; height: 100%;'>
+      <div style='height: 100%; width: 100%;' class=row>
+       <div style='height: 100%;' class='col-md-12'>
+        <table id="results-table" class="table table-hover"
+         style="float: none">
+         <thead>
+          <tr>
+           <th class="diagram">Diagram</th>
+           <th class="name">Name</th>
+           <th class="formula">Formula</th>
+           <th class="weight">Mass</th>
+           <th class="inchi">InChI</th>
+           <!-- <th class="smiles">SMILES</th> -->
+         </thead>
+         <tbody id="results-table-body">
+         </tbody>
+        </table>
+       </div>
+      </div>
+     </div>
+     <div id=card-view-tab class="tab-pane active" style='height: 100%;'>
+      <div class="container-fluid" style='height: 100%';>
+       <div id=cards class="row-fluid" style="height: 100%;"></div>
+      </div
+     </div>
+    </div>
+   </div>
   </div>
  </div>
- <div class=row style='text-align: center; padding: 20px;'><h4>Developed as part of the <a href='http://openchemistry.org/'>Open
-Chemistry</a> project. All data is <a href='http://creativecommons.org/licenses/by-sa/3.0/'>CC-BY-SA</a>, the <a href='http://cleanenergy.molecularspace.org/'>Clean Energy Project</a>.</h4></div>
+
+ <div class=row style='text-align: center; padding: 20px;'>
+  <div class=col-md-12>
+   <h4>
+    Developed as part of the <a href='http://openchemistry.org/'>Open
+     Chemistry</a> project. All data is <a
+     href='http://creativecommons.org/licenses/by-sa/3.0/'>CC-BY-SA</a>,
+    the <a href='http://cleanenergy.molecularspace.org/'>Clean
+     Energy Project</a>.
+   </h4>
+  </div>
+ </div>
 </body>
 <div id=3d-view-dialog class="modal fade" style='height: 100%;''>
  <div class="modal-dialog" style='height: 90%; width: 90%;'>
@@ -131,6 +163,7 @@ Chemistry</a> project. All data is <a href='http://creativecommons.org/licenses/
            </tr>
            </td>
           </table>
+         </td>
         </tr>
         <tr class=energy style='display: none;'>
          <th>Energy</th>
@@ -174,8 +207,8 @@ Chemistry</a> project. All data is <a href='http://creativecommons.org/licenses/
       </table>
       <div class="btn-group">
        <a id=download-default type="button" class="btn btn-primary">
-       <span class="glyphicon glyphicon-download"></span>
-       Download</a>
+        <span class="glyphicon glyphicon-download"></span> Download
+       </a>
        <button type="button" class="btn btn-primary dropdown-toggle"
         data-toggle="dropdown">
         <span class="caret"></span>
