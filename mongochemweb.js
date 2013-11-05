@@ -463,17 +463,14 @@ mongochem.init = function() {
 
   if(!$('body').hasClass("initialized")) {
     $('body').addClass("initialized");
-    vtkWeb.start( config,
+
+    mongochem.connecting = vtkWeb.start( config,
        function(connection){
          mongochem.connection = connection;
 
          if(connection.error) {
            alert(connection.error);
            window.close();
-         }
-         // Load default view
-         else {
-           mongochem.initDefaultView();
          }
        }, function(msg){
          $(".loading").hide();
@@ -482,6 +479,9 @@ mongochem.init = function() {
          mongochem.initDefaultView();;
        });
   }
+
+  //Load default view
+  mongochem.initDefaultView();
 }
 
 mongochem.connect = function(onConnect) {
@@ -661,9 +661,19 @@ mongochem.load = function(data) {
 
   }
 
-  if (mongochem.connection.session == null) {
-    mongochem.connect(load);
-  } else {
-    load();
+  var loadEnsureConnection = function() {
+    if (mongochem.connection.session == null) {
+      mongochem.connect(load);
+    } else {
+      load();
+    }
+  };
+
+  // If connection request did not fail use promise to make sure connection is done
+  if (mongochem.connecting.state() != 'rejected') {
+    mongochem.connecting.done(loadEnsureConnection);
+  }
+  else {
+    loadEnsureConnection();
   }
 }
