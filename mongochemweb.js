@@ -453,7 +453,11 @@ mongochem.initDefaultView = function() {
 //    properties: {'molecular mass': 404.3499}});
 }
 
-mongochem.init = function() {
+mongochem.start = function() {
+  if (mongochem.viewport) {
+    mongochem.viewport.unbind();
+    mongochem.viewport = null;
+  }
   var config = {
     sessionManagerURL: "http://" + window.location.host + "/session",
     name : "WebMolecule",
@@ -461,23 +465,24 @@ mongochem.init = function() {
     application : "mol"
   };
 
+  mongochem.connecting = vtkWeb.start( config,
+      function(connection){
+        mongochem.connection = connection;
+
+        if(connection.error) {
+          alert(connection.error);
+          window.close();
+        }
+      }, function(msg){
+        alert("The remote session did not properly start. Try to use embeded url.");
+        mongochem.connection = {sessionURL: "ws://ulmus:8081/ws"};
+      });
+};
+
+mongochem.init = function() {
   if(!$('body').hasClass("initialized")) {
     $('body').addClass("initialized");
-
-    mongochem.connecting = vtkWeb.start( config,
-       function(connection){
-         mongochem.connection = connection;
-
-         if(connection.error) {
-           alert(connection.error);
-           window.close();
-         }
-       }, function(msg){
-         $(".loading").hide();
-         alert("The remote session did not properly start. Try to use embeded url.");
-         mongochem.connection = {sessionURL: "ws://ulmus:8081/ws"};
-         mongochem.initDefaultView();;
-       });
+    mongochem.start();
   }
 
   //Load default view
@@ -485,8 +490,6 @@ mongochem.init = function() {
 }
 
 mongochem.connect = function(onConnect) {
-  loading = $(".loading"), mongochem.viewport = null;
-
   if(location.protocol == "http:") {
      mongochem.connection.sessionURL = mongochem.connection.sessionURL.replace("wss:","ws:");
   }
@@ -496,8 +499,11 @@ mongochem.connect = function(onConnect) {
     mongochem.connection = serverConnection;
     onConnect();
   }, function(code, reason) {
-    loading.hide();
-    alert(reason);
+
+    if (mongochem.connection.session)
+      mongochem.connection.session.close();
+      mongochem.connection = null;
+      mongochem.connecting = null;
   });
 }
 
@@ -650,6 +656,8 @@ mongochem.load = function(data) {
           $('#3d-view-dialog').modal();
         });
 
+        $('#3d-view-dialog').data('molecule', data);
+
       },
 
       // RPC error callback
@@ -669,11 +677,26 @@ mongochem.load = function(data) {
     }
   };
 
+  // If the session has timeout then create a new one
+  if (mongochem.connecting == null)
+    mongochem.start();
+
   // If connection request did not fail use promise to make sure connection is done
   if (mongochem.connecting.state() != 'rejected') {
     mongochem.connecting.done(loadEnsureConnection);
   }
   else {
     loadEnsureConnection();
+  }
+}
+
+window.onerror = function(errorMsg, url, lineNumber) {
+
+  // Would be nice if vtkWeb would produce some sort of event we could hook
+  // into, for now just use the error message.
+  if (errorMsg == "Uncaught Autobahn not connected") {
+    if ($("#3d-view-dialog").is(':visible')) {
+      mongochem.load($("#3d-view-dialog").data('molecule'));
+    }
   }
 }
