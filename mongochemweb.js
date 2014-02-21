@@ -455,7 +455,7 @@ mongochem.initDefaultView = function() {
 
 mongochem.init = function() {
   var config = {
-    sessionManagerURL: "http://localhost:9000/paraview",
+    sessionManagerURL: "http://" + window.location.host + "/session",
     name : "WebMolecule",
     description : "Visualize molecules using VTK",
     application : "mol"
