@@ -459,11 +459,11 @@ mongochem.start = function() {
     mongochem.viewport = null;
   }
   var config = {
-      sessionManagerURL: "http://localhost:9000/paraview",
-      name : "WebMolecule",
-      description : "Visualize molecules using VTK",
-      application : "mol"
-    };
+   sessionManagerURL: "http://" + window.location.host + "/session",
+    name : "WebMolecule",
+    description : "Visualize molecules using VTK",
+    application : "mol"
+  };
 
   mongochem.connecting = vtkWeb.start( config,
       function(connection){
@@ -475,7 +475,7 @@ mongochem.start = function() {
         }
       }, function(msg){
         alert("The remote session did not properly start. Try to use embeded url.");
-        mongochem.connection = {sessionURL: "ws://ulmus:8081/ws"};
+        mongochem.connection = {sessionURL: "ws://localhost:8081/ws"};
       });
 };
 
@@ -525,7 +525,7 @@ mongochem.setupViewport = function() {
 mongochem.stop = function() {
   if (mongochem.connection.session) {
     mongochem.viewport.unbind();
-    mongochem.connection.session.call('vtk:exit');
+    mongochem.connection.session.call('application.exit');
     mongochem.connection.session.close();
     mongochem.connection.session = null;
   }
@@ -563,7 +563,7 @@ mongochem.load = function(data) {
   var load = function() {
 
     //$('#3d-view-dialog').one('shown.bs.modal', function() {
-      mongochem.connection.session.call('vtk:load', data.inchikey).then(
+      mongochem.connection.session.call('load', [data.inchikey]).then(
       // RPC success callback
       function(res) {
 
@@ -662,7 +662,7 @@ mongochem.load = function(data) {
 
       // RPC error callback
       function(error, desc) {
-        console.log("error: " + desc);
+        console.log(error);
       });
     //});
 

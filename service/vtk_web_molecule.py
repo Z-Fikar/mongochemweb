@@ -10,7 +10,7 @@ import vtk
 from vtk.web import server, wamp, protocols
 
 # import annotations
-from autobahn.wamp import exportRpc
+from autobahn.wamp import register as exportRpc
 
 try:
     import argparse
@@ -31,11 +31,11 @@ class _WebMolecule(wamp.ServerProtocol):
     authKey = "vtkweb-secret"
 
     # Application configuration
-    def __init__(self):
+    def __init__(self, config):
       self.view = None
-      wamp.ServerProtocol.__init__(self)
+      wamp.ServerProtocol.__init__(self, config)
 
-    @exportRpc
+    @exportRpc("load")
     def load(self, inchikey):
 
       self.reader = vtk.vtkCMLMoleculeReader()
