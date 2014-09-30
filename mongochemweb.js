@@ -563,7 +563,7 @@ mongochem.load = function(data) {
   var load = function() {
 
     //$('#3d-view-dialog').one('shown.bs.modal', function() {
-      mongochem.connection.session.call('vtk:load', data.inchikey).then(
+      mongochem.connection.session.call('load', [data.inchikey]).then(
       // RPC success callback
       function(res) {
 
