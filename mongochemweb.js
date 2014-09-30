@@ -662,7 +662,7 @@ mongochem.load = function(data) {
 
       // RPC error callback
       function(error, desc) {
-        console.log("error: " + desc);
+        console.log(error);
       });
     //});
 
