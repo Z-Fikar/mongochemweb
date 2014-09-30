@@ -525,7 +525,7 @@ mongochem.setupViewport = function() {
 mongochem.stop = function() {
   if (mongochem.connection.session) {
     mongochem.viewport.unbind();
-    mongochem.connection.session.call('vtk:exit');
+    mongochem.connection.session.call('application.exit');
     mongochem.connection.session.close();
     mongochem.connection.session = null;
   }
