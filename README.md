@@ -47,7 +47,7 @@ to coordinate development and to provide support.
 
   [MongoChemLogo]: http://openchemistry.org/files/logos/mongochem.png "MongoChem"
   [OpenChemistry]: http://openchemistry.org/ "Open Chemistry Project"
-  [OpenChemistryLogo]: http://openchemistry.org/opensourcelogos/openchem100.png "Open Chemistry"
+  [OpenChemistryLogo]: http://openchemistry.org/files/logos/openchem128.png "Open Chemistry"
   [Kitware]: http://kitware.com/ "Kitware, Inc."
   [KitwareLogo]: http://www.kitware.com/img/small_logo_over.png "Kitware"
   [Dashboard]: http://cdash.openchemistry.org/index.php?project=MongoChem "MongoChem Dashboard"
